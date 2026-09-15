@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: habit
+      POSTGRES_PASSWORD: habit
+      POSTGRES_DB: habittracker
+    # 5433 on the host so a Postgres already running locally is left alone.
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habit -d habittracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./BE
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=habittracker;Username=habit;Password=habit
+    # The API creates the schema and seeds on startup, so it must not start before
+    # the database is genuinely ready to accept connections.
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5080:8080"
+
+  web:
+    build: ./FE
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  db-data:
