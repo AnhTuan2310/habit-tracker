@@ -1,6 +1,6 @@
-import { formatDayMonth, minutesSince } from '../lib/dates'
+import { Clock, WarningCircle } from '@phosphor-icons/react'
 import { FAILED_AFTER_ATTEMPTS, STALE_AFTER_MS } from '../hooks/useHabitBoard'
-import { IconAlert, IconClock } from './Icons'
+import { formatDayMonth, minutesSince } from '../lib/dates'
 
 /**
  * Answers the awkward question: how would someone find out that a tick from days
@@ -13,8 +13,11 @@ import { IconAlert, IconClock } from './Icons'
 export default function SyncBanner({ pending, offline, error }) {
   if (pending.length === 0) {
     return error && !offline ? (
-      <div role="alert" className="flex items-start gap-2 border-l-2 border-failed py-2 pl-3 text-sm text-failed">
-        <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
+      <div
+        role="alert"
+        className="flex items-start gap-2 border-l-2 border-failed py-2 pl-3 text-sm text-failed"
+      >
+        <WarningCircle size={17} weight="fill" className="mt-0.5 shrink-0" />
         <span>Không lấy được dữ liệu mới: {error}</span>
       </div>
     ) : null
@@ -29,11 +32,15 @@ export default function SyncBanner({ pending, offline, error }) {
   const toneClass = tone === 'failed' ? 'border-failed text-failed' : 'border-pending text-pending'
 
   return (
-    <div role="status" aria-live="polite" className={`flex items-start gap-2 border-l-2 py-2 pl-3 text-sm ${toneClass}`}>
+    <div
+      role="status"
+      aria-live="polite"
+      className={`flex items-start gap-2 border-l-2 py-2 pl-3 text-sm ${toneClass}`}
+    >
       {tone === 'failed' ? (
-        <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
+        <WarningCircle size={17} weight="fill" className="mt-0.5 shrink-0" />
       ) : (
-        <IconClock className="mt-0.5 h-4 w-4 shrink-0" />
+        <Clock size={17} weight="fill" className="mt-0.5 shrink-0" />
       )}
 
       <div>
@@ -51,8 +58,8 @@ export default function SyncBanner({ pending, offline, error }) {
 
         {!offline && failing.length > 0 && (
           <p className="mt-1 text-muted">
-            {failing.length} thay đổi đã thử lại {FAILED_AFTER_ATTEMPTS} lần trở lên. Lỗi gần
-            nhất: {failing[0].lastError}
+            {failing.length} thay đổi đã thử lại {FAILED_AFTER_ATTEMPTS} lần trở lên. Lỗi gần nhất:{' '}
+            {failing[0].lastError}
           </p>
         )}
       </div>

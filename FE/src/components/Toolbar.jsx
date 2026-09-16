@@ -1,5 +1,5 @@
+import { ArrowsClockwise, Clock, WifiHigh, WifiSlash } from '@phosphor-icons/react'
 import { formatAgo } from '../lib/dates'
-import { IconClock, IconRefresh, IconWifi, IconWifiOff } from './Icons'
 
 /**
  * The controls that make the sync behaviour visible: which device this tab is,
@@ -37,31 +37,32 @@ export default function Toolbar({
         onClick={() => onToggleOffline(!offline)}
         aria-pressed={!offline}
         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition active:scale-[0.97] ${
-          offline ? 'bg-failed/15 text-failed' : 'bg-accent/15 text-accent'
+          offline ? 'bg-failed/12 text-failed' : 'bg-accent/12 text-accent'
         }`}
       >
-        {offline ? <IconWifiOff className="h-3.5 w-3.5" /> : <IconWifi className="h-3.5 w-3.5" />}
+        {offline ? <WifiSlash size={15} weight="fill" /> : <WifiHigh size={15} weight="fill" />}
         {offline ? 'Ngoại tuyến' : 'Trực tuyến'}
       </button>
 
       <button
         onClick={onSyncNow}
         disabled={syncing}
-        className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-muted transition hover:text-ink disabled:opacity-40 active:scale-[0.97]"
+        className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-muted transition hover:text-ink active:scale-[0.97] disabled:opacity-40"
       >
-        <IconRefresh className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+        <ArrowsClockwise size={15} weight="bold" className={syncing ? 'animate-spin' : ''} />
         {syncing ? 'Đang đồng bộ…' : 'Đồng bộ ngay'}
       </button>
 
-      <span className="ml-auto flex items-center gap-3 text-xs tabular-nums text-muted">
+      <span className="ml-auto flex items-center gap-3 text-xs text-muted">
         {pendingCount > 0 ? (
-          <span className="inline-flex items-center gap-1 text-pending">
-            <IconClock className="h-3.5 w-3.5" /> {pendingCount}
+          <span className="inline-flex items-center gap-1 tabular-nums text-pending">
+            <Clock size={15} weight="fill" /> {pendingCount}
           </span>
         ) : (
           <span className="text-accent">đã đồng bộ</span>
         )}
-        <span className="opacity-60">{formatAgo(lastSyncedAt)} · seq {lastSeq}</span>
+        <span className="opacity-70">{formatAgo(lastSyncedAt)}</span>
+        <span className="tabular-nums opacity-50">seq {lastSeq}</span>
       </span>
     </div>
   )

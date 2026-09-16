@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHabitService, HabitService>();
 builder.Services.AddScoped<ISyncService, SyncService>();
 

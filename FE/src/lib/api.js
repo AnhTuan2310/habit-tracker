@@ -37,6 +37,9 @@ async function request(path, options = {}) {
   return body.data
 }
 
+/** Who the app is acting as. Becomes the authenticated user once login exists. */
+export const getCurrentUser = () => request('/api/users/me')
+
 export const getBoard = (today, days) =>
   request(`/api/habits?today=${today}&days=${days}`)
 

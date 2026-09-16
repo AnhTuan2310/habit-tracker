@@ -2,21 +2,22 @@
 @import "@fontsource-variable/geist";
 
 @theme {
-  /* Warm bone canvas with white cards. Never pure #FFF behind everything and
-     never pure #000 for text — both read as unfinished on a real screen. */
-  --color-surface: #fbfbfa;
+  /* Warm bone canvas, white card sitting on top of it. The canvas is deliberately
+     several steps off white: a near-white page with white cards has no depth and
+     glares under normal room light. */
+  --color-surface: #ece9e2;
   --color-panel: #ffffff;
-  --color-edge: #eaeaea;
-  --color-ink: #111111;
-  --color-muted: #787774;
+  --color-edge: #e0dad0;
+  --color-ink: #1c1a17;
+  --color-muted: #746e64;
 
   /* Three colours, and all three are semantic: synced, waiting, failed. They are
      not decoration, so they stay even though a marketing page would use one. Each
-     is the dark text tone; the pale backgrounds come from the same value at low
-     alpha, which lands close to the intended pastel over the bone canvas. */
-  --color-accent: #346538;
-  --color-pending: #956400;
-  --color-failed: #9f2f2d;
+     is the dark text tone; the pale fills come from the same value at low alpha.
+     All three are warm to match the greys — one family, not two. */
+  --color-accent: #3d6b42;
+  --color-pending: #8a5d12;
+  --color-failed: #9b322c;
 
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }

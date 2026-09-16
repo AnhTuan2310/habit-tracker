@@ -1,6 +1,6 @@
+import { Check, X } from '@phosphor-icons/react'
 import { cellKey } from '../hooks/useHabitBoard'
 import { formatDayMonth } from '../lib/dates'
-import { IconCheck, IconX } from './Icons'
 
 export default function HabitCard({ habit, today, pendingKeys, failedKeys, onToggle, onArchive }) {
   const todayPending = pendingKeys.has(cellKey(habit.id, today))
@@ -31,10 +31,10 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
           className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-xl transition active:scale-[0.95] ${
             habit.doneToday
               ? 'border-accent/30 bg-accent/10 text-accent'
-              : 'border-edge bg-panel text-muted hover:border-muted/50'
+              : 'border-edge bg-surface/60 text-muted hover:border-muted/50'
           }`}
         >
-          {habit.doneToday ? <IconCheck className="h-5 w-5" /> : habit.emoji || '○'}
+          {habit.doneToday ? <Check size={20} weight="bold" /> : habit.emoji || '○'}
         </button>
 
         <div className="min-w-0 flex-1">
@@ -66,7 +66,7 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
           aria-label={`Lưu trữ ${habit.name}`}
           className="shrink-0 rounded-md p-1.5 text-muted/70 transition hover:text-failed active:scale-[0.95]"
         >
-          <IconX className="h-4 w-4" />
+          <X size={16} weight="bold" />
         </button>
       </div>
 
@@ -105,7 +105,7 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
                       ? 'bg-pending/60'
                       : cell.done
                         ? 'bg-accent/75'
-                        : 'bg-edge hover:bg-muted/30'
+                        : 'bg-surface hover:bg-muted/25'
                 }`}
               />
             )
@@ -117,9 +117,7 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
         <div className="mt-1.5 flex items-center justify-between gap-3 text-[11px] text-muted">
           <span className="tabular-nums">{formatDayMonth(firstDay.date)}</span>
 
-          {devices.length > 1 && (
-            <span className="truncate">ghi từ {devices.join(', ')}</span>
-          )}
+          {devices.length > 1 && <span className="truncate">ghi từ {devices.join(', ')}</span>}
 
           <span className="tabular-nums">hôm nay {formatDayMonth(lastDay.date)}</span>
         </div>

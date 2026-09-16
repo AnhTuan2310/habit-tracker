@@ -20,6 +20,7 @@ export const cellKey = (habitId, localDate) => `${habitId}|${localDate}`
 
 export function useHabitBoard() {
   const [deviceId, setDeviceId] = useState(getDeviceId)
+  const [user, setUser] = useState(null)
   const [board, setBoard] = useState(null)
   const [pending, setPending] = useState([])
   const [overrides, setOverrides] = useState([])
@@ -81,9 +82,7 @@ export function useHabitBoard() {
 
       // The winning state for a cell comes back in the same response, so the
       // notice can name the device that overruled this one.
-      const winnerOf = new Map(
-        result.changes.map((c) => [cellKey(c.habitId, c.localDate), c]),
-      )
+      const winnerOf = new Map(result.changes.map((c) => [cellKey(c.habitId, c.localDate), c]))
 
       const lost = result.results
         .filter((r) => r.outcome === OUTCOME.SUPERSEDED)
@@ -186,6 +185,12 @@ export function useHabitBoard() {
 
   const dismissOverrides = useCallback(() => setOverrides([]), [])
 
+  // Who the app is acting as. Failing quietly is fine: the greeting is the only
+  // thing that depends on it, and the app is perfectly usable without a name.
+  useEffect(() => {
+    api.getCurrentUser().then(setUser).catch(() => {})
+  }, [])
+
   useEffect(() => {
     loadBoard()
     refreshQueue()
@@ -221,6 +226,7 @@ export function useHabitBoard() {
 
   return {
     today,
+    user,
     board,
     deviceId,
     offline,

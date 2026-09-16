@@ -96,6 +96,7 @@ nào". `SyncOperations` trả lời "thao tác này server xử lý chưa". Gộ
 |---|---|
 | `GET /api/habits?today=&days=` | Toàn bộ màn hình chính: habit, streak, lưới ngày |
 | `POST /api/habits` · `DELETE /api/habits/{id}` | Tạo / lưu trữ |
+| `GET /api/users/me` | Người dùng hiện tại. Đây là chỗ đăng nhập sẽ cắm vào |
 | `POST /api/sync` | Đẩy lô thao tác **và** nhận về thay đổi, trong một lượt |
 
 `POST /api/sync` làm cả hai chiều vì một máy vừa online lại cần cả hai cùng lúc: nó có thao tác
