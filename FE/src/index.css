@@ -1,14 +1,24 @@
 @import "tailwindcss";
+@import "@fontsource-variable/geist";
 
 @theme {
-  --color-surface: #0f1115;
-  --color-panel: #171a21;
-  --color-edge: #252a34;
-  --color-ink: #e6e8ec;
-  --color-muted: #8b93a3;
-  --color-accent: #4ade80;
-  --color-pending: #fbbf24;
-  --color-failed: #f87171;
+  /* Warm bone canvas with white cards. Never pure #FFF behind everything and
+     never pure #000 for text — both read as unfinished on a real screen. */
+  --color-surface: #fbfbfa;
+  --color-panel: #ffffff;
+  --color-edge: #eaeaea;
+  --color-ink: #111111;
+  --color-muted: #787774;
+
+  /* Three colours, and all three are semantic: synced, waiting, failed. They are
+     not decoration, so they stay even though a marketing page would use one. Each
+     is the dark text tone; the pale backgrounds come from the same value at low
+     alpha, which lands close to the intended pastel over the bone canvas. */
+  --color-accent: #346538;
+  --color-pending: #956400;
+  --color-failed: #9f2f2d;
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html,
@@ -17,9 +27,49 @@ body,
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--color-surface);
   color: var(--color-ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  color: var(--color-ink);
+}
+
+/* Only shows for keyboard focus, not mouse clicks — required, not optional. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

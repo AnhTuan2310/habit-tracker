@@ -32,8 +32,8 @@ Chia theo chiều dữ liệu chảy: mô hình dữ liệu → luật tính str
 diện → tài liệu. Mỗi bước xong là chạy được và kiểm chứng được trước khi sang bước sau.
 
 **Đã làm**: hai bảng dữ liệu, tính streak khi đọc, một endpoint đồng bộ hai chiều, hàng đợi
-offline trong trình duyệt, giao diện hiển thị trạng thái chờ/đã gửi/lỗi, và bộ test cho hai chỗ
-khó nhất.
+offline trong trình duyệt, giao diện hiển thị trạng thái chờ/đã gửi/lỗi/bị ghi đè, và bộ test cho
+hai chỗ khó nhất.
 
 **Không làm**: đăng nhập, tick nhiều lần mỗi ngày, tần suất tuỳ biến, service worker thật, triển
 khai lên máy chủ.
@@ -162,6 +162,8 @@ không làm mất cái tick đó.
 Một thao tác chỉ bị xoá khỏi hàng đợi khi server đã trả lời về nó — bất kể trả lời là `Applied`,
 `Duplicate` hay `Superseded`. Cả ba đều có nghĩa "server đã thấy rồi, không còn gì để gửi lại".
 
+Nhưng ba kết quả đó **không có nghĩa như nhau với người dùng**. Xem mục 9 và 10.
+
 **Khi check-in đã gửi mà chưa được xác nhận, UI hiện gì?**
 
 Ô ngày đổi màu ngay và mang nhãn **"đang chờ"** màu vàng. Nhưng **các con số streak thì không
@@ -207,6 +209,11 @@ thì ghi lại giá trị đã kẹp và bật cờ `ClockSkewDetected`. Một m
 kẹp sẽ thắng mọi xung đột mãi mãi. Server cũng trả `serverTimeUtc` trong mỗi phản hồi để client có
 thể tự biết mình lệch.
 
+Cơ chế kẹp này đã tự chứng minh một cách ngoài ý muốn: một kịch bản kiểm thử gửi nhầm mốc thời
+gian lệch hơn bốn tiếng về tương lai, và cả ba thao tác đều bị kẹp về đúng giờ nhận, kèm cờ
+`ClockSkewDetected` bật lên trong database. Đó đúng là hành vi mong muốn, quan sát được trên
+Postgres thật chứ không chỉ trong unit test.
+
 **Phần còn lại chưa xử lý**: lệch dưới ngưỡng 5 phút vẫn có thể làm chọn sai. Đây đúng là quyết
 định tôi ít tự tin nhất ở mục 3.
 
@@ -220,6 +227,9 @@ mọi thay đổi có `Seq` lớn hơn.
 
 Dùng số thứ tự chứ không dùng timestamp là có chủ ý: hai dòng có thể trùng timestamp tới từng
 mili giây, và khi đó dùng `>` sẽ bỏ sót một thay đổi còn dùng `>=` sẽ lặp lại vô hạn.
+
+Client cũng tự gọi đồng bộ mỗi 15 giây kể cả khi không có gì để gửi, nên một máy đang mở sẽ tự
+nhận thay đổi từ máy khác mà không phải bấm gì.
 
 **Hai máy cùng tick một thói quen cho cùng một ngày**: chỉ có một ô, giờ bấm sau thắng. Không sinh
 dòng thứ hai, streak không bị đếm hai lần.
@@ -246,8 +256,14 @@ Khi hai mốc thời gian bằng nhau đúng từng tick, hệ thống so `Devic
 hợp này hiếm, nhưng nó không được phép do may rủi quyết định: cùng một dữ liệu chạy lại phải ra
 cùng một kết quả.
 
-Thao tác thua không bị vứt im lặng. Nó vẫn được ghi vào `SyncOperations` với kết quả `Superseded`,
-nên gửi lại vẫn vô hại và thiết bị vẫn biết thay đổi của mình đã thua.
+**Thao tác thua không được biến mất im lặng.** Nó vẫn được ghi vào `SyncOperations` với kết quả
+`Superseded` nên gửi lại vẫn vô hại, và client nhận kết quả đó trong phản hồi rồi **báo thẳng cho
+người dùng**: thói quen nào, ngày nào, họ đã chọn gì, và thiết bị nào bấm sau nên thắng.
+
+Thiếu thông báo đó thì cái tick tự đảo ngược trên màn hình mà không giải thích gì — đúng cái cảm
+giác ứng dụng vừa làm mất dữ liệu của mình. Bản đầu tiên của client đã mắc lỗi này: nó xoá mọi
+thao tác khỏi hàng đợi như nhau, coi `Superseded` ngang với `Applied`. Đúng với hàng đợi, sai với
+người dùng.
 
 **Trong cùng một lô** cũng có thể có hai thao tác trỏ vào một ô (máy offline tick rồi bỏ tick).
 `SyncService` giữ một dictionary các ô đã chạm trong vòng lặp, vì chưa có gì được ghi xuống
@@ -256,17 +272,27 @@ database nên đọc lại sẽ không thấy thay đổi vừa tạo ra ở vò
 **Last-write-wins, merge, hay hỏi người dùng?** Last-write-wins. Một ô chỉ có hai giá trị
 tick/không tick nên không có gì để merge. Còn hỏi lại người dùng thì nặng tay quá so với giá trị:
 bắt người ta dừng lại chọn giữa "đã tập thể dục" và "chưa tập thể dục" thì phiền hơn là lấy luôn
-lần bấm gần nhất.
+lần bấm gần nhất — rồi báo cho họ biết việc đó đã xảy ra.
 
 ---
 
 ## 10. Trạng thái đồng bộ trên giao diện
 
-Ba tầng thông tin, từ hẹp tới rộng:
+Đề đòi UI thể hiện bốn thứ: đang chờ, đã gửi, gửi lỗi, và **dữ liệu cũ**. Bốn tầng thông tin,
+từ hẹp tới rộng:
 
 1. **Từng ô ngày**: vàng là đang chờ, đỏ là đã thử lại từ 3 lần trở lên, xanh là đã đồng bộ.
-2. **Thanh công cụ**: số thay đổi đang chờ, hoặc dấu tích "đã đồng bộ" khi hàng đợi rỗng.
-3. **Banner**: hiện khi còn thay đổi chưa gửi được.
+2. **Thanh công cụ**: số thay đổi đang chờ, và **lần đồng bộ gần nhất cách đây bao lâu**. Cái sau
+   là phần trả lời cho "dữ liệu cũ": những gì đang hiển thị chỉ là ảnh chụp tại thời điểm đó, và
+   máy khác có thể đã đổi gì đó kể từ lúc ấy.
+3. **Banner hàng đợi**: hiện khi còn thay đổi chưa gửi được.
+4. **Thông báo bị ghi đè**: hiện khi thay đổi của chính người dùng đã thua một thiết bị khác.
+
+Mỗi ô ngày còn cho biết **thiết bị nào đã quyết định ngày đó** khi rê chuột lên, và dưới lưới có
+một dòng tóm tắt các thiết bị đã tham gia khi có từ hai trở lên. Cần nói rõ giới hạn: đó là thiết
+bị *thắng lần cuối*, không phải mọi thiết bị từng chạm vào ngày đó. Tablet tick, điện thoại bỏ
+tick, rồi tablet tick lại thì chỉ còn thấy tablet. Lịch sử đầy đủ của mọi lần thử nằm trong
+`SyncOperations`, nhưng chưa có endpoint nào đọc ra.
 
 **Làm sao người dùng phát hiện một check-in của ba ngày trước âm thầm gửi lỗi?**
 
@@ -292,6 +318,10 @@ thì ngưỡng đó dài hơn nhiều.
   người ngồi một máy vẫn dựng lại được cảnh hai thiết bị mâu thuẫn.
 - **Mỗi thói quen chỉ tick một lần mỗi ngày.** Xem mục 4.
 - **Không có tần suất tuỳ biến.** Mọi thói quen đều là hằng ngày.
+- **Thông báo bị ghi đè chỉ sống trong phiên.** Đóng tab là mất, vì nó nằm trong state của React
+  chứ không được lưu xuống. Đủ cho mục đích của nó là giải thích một thay đổi vừa xảy ra trước
+  mắt, nhưng một sản phẩm thật nên giữ lại thành nhật ký xem được sau.
+- **Chỉ có giao diện sáng.** Không làm chế độ tối.
 - **Migration chạy lúc khởi động.** Chấp nhận được vì chỉ có một instance API sở hữu database này.
   Nhiều instance thì hai tiến trình sẽ cùng migrate một lúc.
 - **Mỗi lần ghi gọi `nextval` một lần**, tức một lượt đi về database cho mỗi thay đổi. Với lô lớn
@@ -332,5 +362,5 @@ Theo thứ tự tôi sẽ làm:
   với ô `Undone`.
 - **Phân trang cho lịch sử.** `GET /api/habits` trả về lưới 30 ngày nhưng đọc toàn bộ lịch sử để
   tính chuỗi dài nhất. Xem mục 5.
-- **Kiểm chứng giao diện trên trình duyệt thật** ở mức nhấp chuột từng bước, ngoài việc build sạch
-  và các API đã chạy đúng.
+- **Thông báo khi nhận thay đổi từ máy khác.** Hiện chỉ báo khi thay đổi của mình bị ghi đè. Trường
+  hợp máy khác tick một ngày mà máy này chưa từng chạm tới thì ô cứ thế đổi màu, không nói gì.

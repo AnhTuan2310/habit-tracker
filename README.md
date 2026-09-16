@@ -29,15 +29,20 @@ bắt đầu lại từ đầu.
 
 1. Mở http://localhost:5173 ở **hai tab**. Mỗi tab là một thiết bị riêng — tên thiết bị hiện ở
    thanh công cụ, bấm vào đó đổi tên được cho dễ theo dõi.
-2. **Tab A**: bấm nút `🌐 Trực tuyến` để chuyển thành `⛔ Ngoại tuyến`.
+2. **Tab A**: bấm nút `Trực tuyến` để chuyển thành `Ngoại tuyến`.
 3. **Tab A**: tick thói quen *Uống đủ nước*. Ô chuyển màu vàng với nhãn **đang chờ**, và banner
    phía trên cho biết có bao nhiêu thay đổi chưa tới được máy chủ, cũ nhất từ ngày nào.
 4. **Tab B** (vẫn trực tuyến): tick **cùng thói quen đó** cho **cùng ngày**. Thao tác này đi thẳng
    lên máy chủ.
-5. **Tab A**: bấm `⛔ Ngoại tuyến` để trở lại trực tuyến. Hàng đợi tự động đẩy đi.
+5. **Tab A**: bấm `Ngoại tuyến` để trở lại trực tuyến. Hàng đợi tự động đẩy đi.
 
 Kết quả mong đợi: trạng thái cuối cùng là của lần bấm **sau**, dù thiết bị đó đồng bộ trước hay
 sau. Chỉ có **một** bản ghi cho ngày đó, và chuỗi ngày **không bị đếm hai lần**.
+
+Nếu thao tác của tab A là bên thua, tab A hiện thêm thông báo **"thay đổi của bạn đã bị thiết bị
+khác ghi đè"**, nói rõ thói quen nào, ngày nào, tab A đã chọn gì và thiết bị nào bấm sau nên
+thắng. Không có dòng đó thì cái tick tự đảo ngược trên màn hình mà không ai hiểu vì sao — trông
+hệt như ứng dụng làm mất dữ liệu.
 
 Bấm `Đồng bộ ngay` thêm vài lần nữa cũng không làm gì đổi — gửi lại là vô hại.
 
@@ -48,9 +53,12 @@ docker compose exec db psql -U habit -d habittracker \
   -c 'SELECT "DeviceId","Status","Seq","LocalDate" FROM "CheckIns" ORDER BY "Seq";'
 ```
 
-Thử nốt trường hợp gửi lỗi: bật `⛔ Ngoại tuyến`, tick vài thói quen, rồi để yên. Banner sẽ đếm số
+Thử nốt trường hợp gửi lỗi: bật `Ngoại tuyến`, tick vài thói quen, rồi để yên. Banner sẽ đếm số
 thay đổi đang kẹt và thời gian chờ; sau vài lần thử lại tự động thất bại, các ô chuyển sang màu đỏ.
 Không có thay đổi nào biến mất im lặng.
+
+Thanh công cụ luôn hiện **lần đồng bộ gần nhất cách đây bao lâu**, vì những gì đang hiển thị chỉ là
+ảnh chụp tại thời điểm đó và máy khác có thể đã đổi gì đó kể từ lúc ấy.
 
 ## Chạy test
 
@@ -96,6 +104,7 @@ FE/                          React 19 + Vite + Tailwind
   src/lib/queue.js           Hàng đợi offline trong IndexedDB
   src/lib/api.js             Gọi API, kèm công tắc ngoại tuyến để demo
   src/hooks/useHabitBoard.js Cập nhật lạc quan, đẩy hàng đợi, tự thử lại
+  src/components/            Thanh công cụ, thẻ thói quen, các thông báo sync
 ```
 
 ## Dữ liệu mẫu

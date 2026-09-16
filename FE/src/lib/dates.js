@@ -20,3 +20,23 @@ export function formatDayMonth(isoDate) {
 export function minutesSince(timestamp) {
   return Math.floor((Date.now() - timestamp) / 60000)
 }
+
+/**
+ * How long ago something happened, in words.
+ *
+ * Used to say how fresh the board is. What the server returns is a snapshot, and
+ * another device may have changed something since. Saying how old the snapshot is
+ * costs one line and takes the guesswork out of it.
+ */
+export function formatAgo(timestamp) {
+  if (!timestamp) return 'chưa đồng bộ'
+
+  const seconds = Math.floor((Date.now() - timestamp) / 1000)
+  if (seconds < 5) return 'vừa đồng bộ'
+  if (seconds < 60) return `${seconds} giây trước`
+
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes} phút trước`
+
+  return `${Math.floor(minutes / 60)} giờ trước`
+}

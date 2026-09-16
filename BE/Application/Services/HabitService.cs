@@ -35,6 +35,9 @@ public class HabitService : IHabitService
         {
             var rows = byHabit.TryGetValue(habit.Id, out var found) ? found : new List<CheckIn>();
 
+            // One row per day is guaranteed by the unique index, so this cannot throw.
+            var byDate = rows.ToDictionary(c => c.LocalDate);
+
             // Only Done days count towards consistency. Undone rows are kept in the
             // table as tombstones for conflict resolution, not as progress.
             var doneDates = rows
@@ -47,7 +50,8 @@ public class HabitService : IHabitService
             var recentDays = new List<DayCellDTO>(windowDays);
             for (var date = windowStart; date <= today; date = date.AddDays(1))
             {
-                recentDays.Add(new DayCellDTO(date, doneDates.Contains(date)));
+                byDate.TryGetValue(date, out var row);
+                recentDays.Add(new DayCellDTO(date, row?.Status == CheckInStatus.Done, row?.DeviceId));
             }
 
             summaries.Add(new HabitSummaryDTO(

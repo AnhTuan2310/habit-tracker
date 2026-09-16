@@ -1,5 +1,6 @@
 import { formatDayMonth, minutesSince } from '../lib/dates'
 import { FAILED_AFTER_ATTEMPTS, STALE_AFTER_MS } from '../hooks/useHabitBoard'
+import { IconAlert, IconClock } from './Icons'
 
 /**
  * Answers the awkward question: how would someone find out that a tick from days
@@ -12,8 +13,9 @@ import { FAILED_AFTER_ATTEMPTS, STALE_AFTER_MS } from '../hooks/useHabitBoard'
 export default function SyncBanner({ pending, offline, error }) {
   if (pending.length === 0) {
     return error && !offline ? (
-      <div className="rounded-xl border border-failed/40 bg-failed/10 px-4 py-3 text-sm text-failed">
-        Không lấy được dữ liệu mới: {error}
+      <div role="alert" className="flex items-start gap-2 border-l-2 border-failed py-2 pl-3 text-sm text-failed">
+        <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>Không lấy được dữ liệu mới: {error}</span>
       </div>
     ) : null
   }
@@ -24,31 +26,36 @@ export default function SyncBanner({ pending, offline, error }) {
   const failing = pending.filter((o) => (o.attempts ?? 0) >= FAILED_AFTER_ATTEMPTS)
 
   const tone = failing.length > 0 || stale ? 'failed' : 'pending'
+  const toneClass = tone === 'failed' ? 'border-failed text-failed' : 'border-pending text-pending'
 
   return (
-    <div
-      className={`rounded-xl px-4 py-3 text-sm ${
-        tone === 'failed'
-          ? 'border border-failed/40 bg-failed/10 text-failed'
-          : 'border border-pending/40 bg-pending/10 text-pending'
-      }`}
-    >
-      <strong>
-        {pending.length} thay đổi chưa được máy chủ ghi nhận
-      </strong>
-      <span className="opacity-80">
-        {' '}· cũ nhất là ngày {formatDayMonth(oldest.localDate)}, đã chờ{' '}
-        {waited < 1 ? 'dưới 1 phút' : `${waited} phút`}
-      </span>
-
-      {offline && <div className="mt-1 opacity-80">Thiết bị đang ở chế độ ngoại tuyến.</div>}
-
-      {!offline && failing.length > 0 && (
-        <div className="mt-1 opacity-80">
-          {failing.length} thay đổi đã thử lại {FAILED_AFTER_ATTEMPTS} lần trở lên. Lỗi gần nhất:{' '}
-          {failing[0].lastError}
-        </div>
+    <div role="status" aria-live="polite" className={`flex items-start gap-2 border-l-2 py-2 pl-3 text-sm ${toneClass}`}>
+      {tone === 'failed' ? (
+        <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
+      ) : (
+        <IconClock className="mt-0.5 h-4 w-4 shrink-0" />
       )}
+
+      <div>
+        <p>
+          <strong className="font-medium">{pending.length} thay đổi</strong> chưa được máy chủ ghi
+          nhận
+          <span className="text-muted">
+            {' '}
+            · cũ nhất ngày {formatDayMonth(oldest.localDate)}, đã chờ{' '}
+            {waited < 1 ? 'dưới 1 phút' : `${waited} phút`}
+          </span>
+        </p>
+
+        {offline && <p className="mt-1 text-muted">Thiết bị đang ở chế độ ngoại tuyến.</p>}
+
+        {!offline && failing.length > 0 && (
+          <p className="mt-1 text-muted">
+            {failing.length} thay đổi đã thử lại {FAILED_AFTER_ATTEMPTS} lần trở lên. Lỗi gần
+            nhất: {failing[0].lastError}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

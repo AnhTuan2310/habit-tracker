@@ -24,4 +24,15 @@ public record HabitSummaryDTO(
     int CompletionRatePercent,
     List<DayCellDTO> RecentDays);
 
-public record DayCellDTO(DateOnly Date, bool Done);
+/// <param name="Date">The day this cell stands for.</param>
+/// <param name="Done">Whether the habit was completed that day.</param>
+/// <param name="DeviceId">
+/// Which device settled this day, or null if nothing was ever recorded for it.
+/// <para>
+/// This is the device whose action won, not every device that touched the day. A
+/// tick from the tablet that the phone later undid and the tablet then redid
+/// leaves only the tablet here. The full history of attempts lives in
+/// <c>SyncOperations</c>.
+/// </para>
+/// </param>
+public record DayCellDTO(DateOnly Date, bool Done, string? DeviceId);

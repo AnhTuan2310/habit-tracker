@@ -20,25 +20,26 @@ export default function AddHabitForm({ onAdd }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex gap-2">
+    <form onSubmit={submit} className="flex items-center gap-3 border-b border-edge pb-4">
       <input
         value={emoji}
         onChange={(e) => setEmoji(e.target.value)}
         placeholder="🎯"
         aria-label="Biểu tượng"
-        className="w-14 rounded-lg border border-edge bg-panel px-3 py-2 text-center outline-none focus:border-muted"
+        maxLength={2}
+        className="w-10 border-b border-transparent bg-transparent py-1.5 text-center text-lg transition placeholder:opacity-40 focus:border-muted"
       />
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Thêm thói quen mới…"
         aria-label="Tên thói quen"
-        className="flex-1 rounded-lg border border-edge bg-panel px-3 py-2 outline-none focus:border-muted"
+        className="flex-1 border-b border-transparent bg-transparent py-1.5 text-ink transition placeholder:text-muted focus:border-muted"
       />
       <button
         type="submit"
         disabled={busy || !name.trim()}
-        className="rounded-lg border border-edge px-4 py-2 text-sm hover:border-muted disabled:opacity-40"
+        className="shrink-0 rounded-md px-3 py-1.5 text-sm font-medium text-accent transition hover:bg-accent/10 disabled:pointer-events-none disabled:text-muted disabled:opacity-50 active:scale-[0.97]"
       >
         Thêm
       </button>

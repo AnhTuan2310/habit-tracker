@@ -7,6 +7,9 @@ import { todayLocal } from '../lib/dates'
 const WINDOW_DAYS = 30
 const RETRY_MS = 15000
 
+/** Mirrors the SyncOutcome enum on the server. */
+const OUTCOME = { APPLIED: 0, DUPLICATE: 1, SUPERSEDED: 2 }
+
 /** After this long in the queue, an unsent change is called out in the UI. */
 export const STALE_AFTER_MS = 2 * 60 * 1000
 
@@ -19,6 +22,8 @@ export function useHabitBoard() {
   const [deviceId, setDeviceId] = useState(getDeviceId)
   const [board, setBoard] = useState(null)
   const [pending, setPending] = useState([])
+  const [overrides, setOverrides] = useState([])
+  const [lastSyncedAt, setLastSyncedAt] = useState(null)
   const [offline, setOfflineFlag] = useState(api.isOffline)
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState(null)
@@ -45,9 +50,14 @@ export function useHabitBoard() {
   /**
    * Hands the queue to the server and takes back whatever other devices changed.
    *
-   * Every operation the server answers for is dropped from the queue, whatever the
-   * outcome. Applied, Duplicate and Superseded all mean the same thing to the
-   * client: the server has seen this action and there is nothing left to resend.
+   * Every operation the server answers for leaves the queue, whatever the outcome:
+   * Applied, Duplicate and Superseded all mean there is nothing left to resend.
+   *
+   * But they do not all mean the same thing to the person using the app.
+   * `Superseded` means this user pressed the button and then another device
+   * pressed it later and won. Dropping it silently makes their tick revert on
+   * screen with no explanation, which reads exactly like the app losing data — so
+   * those are collected and surfaced instead.
    */
   const flush = useCallback(async () => {
     const ops = await queue.listFor(deviceId)
@@ -69,8 +79,38 @@ export function useHabitBoard() {
       lastSeq.current = Math.max(lastSeq.current, result.maxSeq)
       setLastSeq(lastSeq.current)
 
+      // The winning state for a cell comes back in the same response, so the
+      // notice can name the device that overruled this one.
+      const winnerOf = new Map(
+        result.changes.map((c) => [cellKey(c.habitId, c.localDate), c]),
+      )
+
+      const lost = result.results
+        .filter((r) => r.outcome === OUTCOME.SUPERSEDED)
+        .map((r) => {
+          const op = ops.find((o) => o.opId === r.opId)
+          if (!op) return null
+
+          const winner = winnerOf.get(cellKey(op.habitId, op.localDate))
+
+          return {
+            opId: r.opId,
+            habitId: op.habitId,
+            localDate: op.localDate,
+            wanted: op.status,
+            winningStatus: winner?.status ?? null,
+            winningDevice: winner?.deviceId ?? null,
+          }
+        })
+        .filter(Boolean)
+
+      if (lost.length > 0) {
+        setOverrides((current) => [...current, ...lost])
+      }
+
       await Promise.all(result.results.map((r) => queue.remove(r.opId)))
       setError(null)
+      setLastSyncedAt(Date.now())
       await loadBoard()
     } catch (e) {
       setError(e.message)
@@ -137,21 +177,23 @@ export function useHabitBoard() {
     [flush],
   )
 
-  const switchDevice = useCallback(
-    (name) => {
-      renameDevice(name)
-      lastSeq.current = 0
-      setDeviceId(name)
-    },
-    [],
-  )
+  const switchDevice = useCallback((name) => {
+    renameDevice(name)
+    lastSeq.current = 0
+    setOverrides([])
+    setDeviceId(name)
+  }, [])
+
+  const dismissOverrides = useCallback(() => setOverrides([]), [])
 
   useEffect(() => {
     loadBoard()
     refreshQueue()
   }, [loadBoard, refreshQueue])
 
-  // A failed sync must not need the user to press anything to recover.
+  // Two jobs in one timer. A failed sync must not need the user to press anything
+  // to recover, and the board must not sit showing a stale snapshot of what other
+  // devices have done.
   useEffect(() => {
     const timer = setInterval(() => {
       if (!api.isOffline()) {
@@ -177,8 +219,6 @@ export function useHabitBoard() {
     [pending],
   )
 
-  const oldestPending = pending.length > 0 ? pending[0] : null
-
   return {
     today,
     board,
@@ -189,13 +229,15 @@ export function useHabitBoard() {
     pending,
     pendingKeys,
     failedKeys,
-    oldestPending,
+    overrides,
+    lastSyncedAt,
     lastSeq: lastSeq.current,
     toggle,
     addHabit,
     archive,
     setOffline,
     switchDevice,
+    dismissOverrides,
     flush,
   }
 }
