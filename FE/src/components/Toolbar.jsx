@@ -1,5 +1,5 @@
-import { ArrowsClockwise, Clock, WifiHigh, WifiSlash } from '@phosphor-icons/react'
 import { formatAgo } from '../lib/dates'
+import { IconClock, IconSync, IconWifi, IconWifiOff } from './Icons'
 
 /**
  * The controls that make the sync behaviour visible: which device this tab is,
@@ -40,7 +40,7 @@ export default function Toolbar({
           offline ? 'bg-failed/12 text-failed' : 'bg-accent/12 text-accent'
         }`}
       >
-        {offline ? <WifiSlash size={15} weight="fill" /> : <WifiHigh size={15} weight="fill" />}
+        {offline ? <IconWifiOff size={16} /> : <IconWifi size={16} />}
         {offline ? 'Ngoại tuyến' : 'Trực tuyến'}
       </button>
 
@@ -49,14 +49,14 @@ export default function Toolbar({
         disabled={syncing}
         className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-muted transition hover:text-ink active:scale-[0.97] disabled:opacity-40"
       >
-        <ArrowsClockwise size={15} weight="bold" className={syncing ? 'animate-spin' : ''} />
+        <IconSync size={16} className={syncing ? 'animate-spin' : ''} />
         {syncing ? 'Đang đồng bộ…' : 'Đồng bộ ngay'}
       </button>
 
       <span className="ml-auto flex items-center gap-3 text-xs text-muted">
         {pendingCount > 0 ? (
           <span className="inline-flex items-center gap-1 tabular-nums text-pending">
-            <Clock size={15} weight="fill" /> {pendingCount}
+            <IconClock size={15} /> {pendingCount}
           </span>
         ) : (
           <span className="text-accent">đã đồng bộ</span>

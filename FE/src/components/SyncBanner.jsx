@@ -1,6 +1,6 @@
-import { Clock, WarningCircle } from '@phosphor-icons/react'
 import { FAILED_AFTER_ATTEMPTS, STALE_AFTER_MS } from '../hooks/useHabitBoard'
 import { formatDayMonth, minutesSince } from '../lib/dates'
+import { IconClock, IconError } from './Icons'
 
 /**
  * Answers the awkward question: how would someone find out that a tick from days
@@ -17,7 +17,7 @@ export default function SyncBanner({ pending, offline, error }) {
         role="alert"
         className="flex items-start gap-2 border-l-2 border-failed py-2 pl-3 text-sm text-failed"
       >
-        <WarningCircle size={17} weight="fill" className="mt-0.5 shrink-0" />
+        <IconError size={18} className="mt-0.5 shrink-0" />
         <span>Không lấy được dữ liệu mới: {error}</span>
       </div>
     ) : null
@@ -38,9 +38,9 @@ export default function SyncBanner({ pending, offline, error }) {
       className={`flex items-start gap-2 border-l-2 py-2 pl-3 text-sm ${toneClass}`}
     >
       {tone === 'failed' ? (
-        <WarningCircle size={17} weight="fill" className="mt-0.5 shrink-0" />
+        <IconError size={18} className="mt-0.5 shrink-0" />
       ) : (
-        <Clock size={17} weight="fill" className="mt-0.5 shrink-0" />
+        <IconClock size={18} className="mt-0.5 shrink-0" />
       )}
 
       <div>

@@ -1,4 +1,4 @@
-import { Check, X } from '@phosphor-icons/react'
+import { IconCheck, IconClose } from './Icons'
 import { cellKey } from '../hooks/useHabitBoard'
 import { formatDayMonth } from '../lib/dates'
 
@@ -33,19 +33,16 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
 
   return (
     <div className="py-6">
-      <div className="flex items-start gap-4">
-        <button
-          onClick={() => onToggle(habit.id, today, !habit.doneToday)}
-          aria-label={`Đánh dấu ${habit.name}`}
-          aria-pressed={habit.doneToday}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-xl transition active:scale-[0.95] ${
-            habit.doneToday
-              ? 'border-accent/30 bg-accent/10 text-accent'
-              : 'border-edge bg-surface/60 text-muted hover:border-muted/50'
-          }`}
+      <div className="flex items-start gap-3">
+        {/* Identification only. This used to double as the check-in button, which
+            nobody could be expected to guess: an emoji carries no signal that it
+            can be pressed. The action now has its own labelled button below. */}
+        <span
+          aria-hidden="true"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface text-lg"
         >
-          {habit.doneToday ? <Check size={20} weight="bold" /> : habit.emoji || '○'}
-        </button>
+          {habit.emoji || '•'}
+        </span>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -57,21 +54,20 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
             </span>
           </div>
 
-          {/* The streak is the entire point of the app, so it is the one number
-              given real size. The rest stays as supporting detail. */}
-          <div className="mt-1.5 flex items-baseline gap-2.5">
+          {/* Two stacked lines, both starting at the same left edge. Putting the
+              big number beside a two line block made the second line drift out of
+              the row. */}
+          <p className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-semibold leading-none tabular-nums">
               {habit.currentStreak}
             </span>
+            <span className="text-sm text-muted">{streakLabel}</span>
+          </p>
 
-            <div className="min-w-0">
-              <p className="text-sm text-muted">{streakLabel}</p>
-              <p className="text-xs text-muted">
-                dài nhất <span className="tabular-nums">{habit.longestStreak}</span> ngày ·{' '}
-                <span className="tabular-nums">{habit.completionRatePercent}%</span> trong 30 ngày
-              </p>
-            </div>
-          </div>
+          <p className="mt-1.5 text-xs text-muted">
+            dài nhất <span className="tabular-nums">{habit.longestStreak}</span> ngày ·{' '}
+            <span className="tabular-nums">{habit.completionRatePercent}%</span> trong 30 ngày
+          </p>
         </div>
 
         <button
@@ -80,9 +76,26 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
           aria-label={`Lưu trữ ${habit.name}`}
           className="shrink-0 rounded-md p-1.5 text-muted/70 transition hover:text-failed active:scale-[0.95]"
         >
-          <X size={16} weight="bold" />
+          <IconClose size={16} />
         </button>
       </div>
+
+      <button
+        onClick={() => onToggle(habit.id, today, !habit.doneToday)}
+        aria-pressed={habit.doneToday}
+        className={`mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition active:scale-[0.98] ${
+          habit.doneToday
+            ? 'border-accent/30 bg-accent/10 text-accent hover:bg-accent/15'
+            : 'border-edge bg-surface/60 text-ink hover:border-muted/50'
+        }`}
+      >
+        {habit.doneToday ? (
+          <IconCheck size={16} />
+        ) : (
+          <span className="h-4 w-4 rounded-[4px] border border-muted/60" />
+        )}
+        {habit.doneToday ? 'Đã xong hôm nay' : 'Đánh dấu hôm nay'}
+      </button>
 
       <div className="mt-4">
         {/* Two rows rather than one. Thirty cells across this card would be under

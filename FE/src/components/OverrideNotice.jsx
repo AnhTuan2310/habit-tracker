@@ -1,5 +1,5 @@
-import { ArrowsLeftRight } from '@phosphor-icons/react'
 import { formatDayMonth } from '../lib/dates'
+import { IconSwap } from './Icons'
 
 const ACTION = ['bỏ tick', 'tick']
 
@@ -18,7 +18,7 @@ export default function OverrideNotice({ overrides, habits, onDismiss }) {
 
   return (
     <div role="alert" className="flex items-start gap-2 border-l-2 border-pending py-2 pl-3 text-sm">
-      <ArrowsLeftRight size={17} weight="bold" className="mt-0.5 shrink-0 text-pending" />
+      <IconSwap size={18} className="mt-0.5 shrink-0 text-pending" />
 
       <div className="min-w-0 flex-1">
         <p className="text-pending">
