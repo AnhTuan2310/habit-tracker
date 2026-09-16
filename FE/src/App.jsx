@@ -46,6 +46,10 @@ export default function App() {
             Xin chào,{' '}
             <span className="font-medium text-ink">{user ? user.name : 'bạn'}</span>
           </p>
+          <div>
+            <text className="mt-5 text-xs italic leading-relaxed text-muted">Mỗi tab là một thiết bị riêng. Mở tab thứ hai, bật Ngoại tuyến ở một bên và tick cùng một thói quen ở cả hai để xem cách xử lý xung đột
+            </text> 
+          </div>
         </header>
 
         {/* Everything lives on one raised card. The bone canvas behind it is what
@@ -100,10 +104,10 @@ export default function App() {
           )}
         </main>
 
-        <footer className="mt-5 px-1 text-xs leading-relaxed text-muted">
+        {/* <footer className="mt-5 px-1 text-xs leading-relaxed text-muted">
           Mỗi tab là một thiết bị riêng. Mở tab thứ hai, bật Ngoại tuyến ở một bên và tick cùng một
           thói quen ở cả hai để xem cách xử lý xung đột.
-        </footer>
+        </footer> */}
       </div>
     </div>
   )

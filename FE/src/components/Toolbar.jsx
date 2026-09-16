@@ -28,9 +28,9 @@ export default function Toolbar({
       <button
         onClick={rename}
         title="Đổi tên thiết bị của tab này"
-        className="rounded-md px-1 py-1 text-muted transition hover:text-ink active:scale-[0.97]"
+        className="rounded-md px-1 py-1 text-gray-500 transition hover:text-ink active:scale-[0.97] bg-accent/30 hover:bg-accent/40"
       >
-        thiết bị <span className="font-medium text-ink">{deviceId}</span>
+        Thiết bị <span className="font-medium text-ink">{deviceId}</span>
       </button>
 
       <button
