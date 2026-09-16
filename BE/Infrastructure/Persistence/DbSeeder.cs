@@ -12,11 +12,11 @@ public static class DbSeeder
 {
     private static readonly (string Emoji, string Name)[] DefaultHabits =
     {
-        ("💧", "Uống đủ nước"),
-        ("🏃", "Tập thể dục"),
-        ("📚", "Đọc sách"),
-        ("🧘", "Thiền"),
-        ("🌙", "Ngủ đúng giờ")
+        ("water_drop", "Uống đủ nước"),
+        ("directions_run", "Tập thể dục"),
+        ("menu_book", "Đọc sách"),
+        ("self_improvement", "Thiền"),
+        ("bedtime", "Ngủ đúng giờ")
     };
 
     public static async Task SeedAsync(AppDbContext db, CancellationToken ct = default)
