@@ -135,7 +135,7 @@ một lần, đúng để minh hoạ ranh giới này.
 
 `Domain/Stats/StreakCalculator.cs` là một hàm thuần: đưa vào danh sách ngày đã hoàn thành và ngày
 hôm nay, trả về chuỗi hiện tại, chuỗi dài nhất, và tỉ lệ 30 ngày. Không chạm database, không đọc
-đồng hồ. Vì vậy nó test được trực tiếp (9 test) và đọc một lượt là hiểu.
+đồng hồ. Vì vậy nó test được trực tiếp (10 test) và đọc một lượt là hiểu.
 
 **Không lưu sẵn con số nào. Tính lại mỗi lần đọc.**
 

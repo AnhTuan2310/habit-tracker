@@ -50,6 +50,19 @@ public class StreakCalculatorTests
     }
 
     [Fact]
+    public void A_run_that_ended_weeks_ago_leaves_the_current_streak_at_zero()
+    {
+        // Reads like a contradiction on screen - "0 ngày liên tiếp" next to
+        // "dài nhất 4" - but it is correct: the four day run finished long ago and
+        // nothing has been ticked since. The two numbers answer different
+        // questions, which is why the label has to say "tính tới hôm nay".
+        var result = StreakCalculator.Compute(DaysBack(26, 27, 28, 29), Today);
+
+        Assert.Equal(0, result.CurrentStreak);
+        Assert.Equal(4, result.LongestStreak);
+    }
+
+    [Fact]
     public void Longest_streak_can_sit_in_the_past()
     {
         var result = StreakCalculator.Compute(DaysBack(0, 5, 6, 7, 8, 9), Today);

@@ -66,9 +66,9 @@ Thanh công cụ luôn hiện **lần đồng bộ gần nhất cách đây bao 
 dotnet test BE/HabitTracker.sln
 ```
 
-23 test, không cần database:
+24 test, không cần database:
 
-- **`StreakCalculatorTests`** (9) — chuỗi bị đứt quãng, hôm nay chưa tick, ngày trùng lặp, dữ liệu
+- **`StreakCalculatorTests`** (10) — chuỗi bị đứt quãng, hôm nay chưa tick, ngày trùng lặp, dữ liệu
   tới không đúng thứ tự, tỉ lệ hoàn thành theo cửa sổ 30 ngày.
 - **`SyncServiceTests`** (14) — gửi lại cùng một thao tác, hai thiết bị tick cùng một ngày, thao
   tác cũ tới sau, `done` gặp `undone`, đồng hồ client sai, hai thao tác cùng một ô trong một lô,

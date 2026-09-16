@@ -13,6 +13,16 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
       ? 'bg-pending/12 text-pending'
       : 'bg-accent/10 text-accent'
 
+  // "0 ngày liên tiếp" sitting next to "dài nhất 4" reads like a contradiction
+  // unless the label says which question each number answers. The big number is
+  // the run still going right now; the small one is the record.
+  const streakLabel =
+    habit.currentStreak > 0
+      ? 'ngày liên tiếp tính tới hôm nay'
+      : habit.longestStreak > 0
+        ? 'ngày liên tiếp — chuỗi đã dừng'
+        : 'ngày liên tiếp — chưa bắt đầu'
+
   const days = habit.recentDays
   const firstDay = days[0]
   const lastDay = days[days.length - 1]
@@ -49,14 +59,18 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
 
           {/* The streak is the entire point of the app, so it is the one number
               given real size. The rest stays as supporting detail. */}
-          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <div className="mt-1.5 flex items-baseline gap-2.5">
             <span className="text-3xl font-semibold leading-none tabular-nums">
               {habit.currentStreak}
             </span>
-            <span className="text-sm text-muted">ngày liên tiếp</span>
-            <span className="ml-auto text-xs tabular-nums text-muted">
-              dài nhất {habit.longestStreak} · {habit.completionRatePercent}% trong 30 ngày
-            </span>
+
+            <div className="min-w-0">
+              <p className="text-sm text-muted">{streakLabel}</p>
+              <p className="text-xs text-muted">
+                dài nhất <span className="tabular-nums">{habit.longestStreak}</span> ngày ·{' '}
+                <span className="tabular-nums">{habit.completionRatePercent}%</span> trong 30 ngày
+              </p>
+            </div>
           </div>
         </div>
 
@@ -70,17 +84,17 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
         </button>
       </div>
 
-      <div className="mt-4 sm:pl-[3.75rem]">
-        {/* One row, one column per day, so the grid never wraps and the two date
-            labels underneath keep meaning whatever window size is asked for. */}
-        <div
-          className="grid gap-1"
-          style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
-        >
+      <div className="mt-4">
+        {/* Two rows rather than one. Thirty cells across this card would be under
+            17px wide, too small for a legible number — and without the number the
+            only way to find a date is to hover every square, which costs a whole
+            extra action just to aim. */}
+        <div className="grid grid-cols-[repeat(10,minmax(0,1fr))] gap-1 sm:grid-cols-[repeat(15,minmax(0,1fr))]">
           {days.map((cell) => {
             const pending = pendingKeys.has(cellKey(habit.id, cell.date))
             const failed = failedKeys.has(cellKey(habit.id, cell.date))
             const isToday = cell.date === today
+            const dayNumber = Number(cell.date.slice(8, 10))
 
             const hint = [
               formatDayMonth(cell.date),
@@ -91,30 +105,32 @@ export default function HabitCard({ habit, today, pendingKeys, failedKeys, onTog
               .filter(Boolean)
               .join(' · ')
 
+            const fill = failed
+              ? 'bg-failed text-white'
+              : pending
+                ? 'bg-pending text-white'
+                : cell.done
+                  ? 'bg-accent text-white'
+                  : 'bg-surface text-muted hover:bg-muted/20'
+
             return (
               <button
                 key={cell.date}
                 onClick={() => onToggle(habit.id, cell.date, !cell.done)}
                 title={hint}
-                className={`aspect-square rounded-[3px] transition active:scale-90 ${
-                  isToday ? 'ring-1 ring-inset ring-ink/40' : ''
-                } ${
-                  failed
-                    ? 'bg-failed/70'
-                    : pending
-                      ? 'bg-pending/60'
-                      : cell.done
-                        ? 'bg-accent/75'
-                        : 'bg-surface hover:bg-muted/25'
+                aria-label={hint}
+                className={`grid aspect-square place-items-center rounded-[5px] text-[11px] tabular-nums transition active:scale-90 ${fill} ${
+                  isToday ? 'ring-2 ring-ink/50' : ''
                 }`}
-              />
+              >
+                {dayNumber}
+              </button>
             )
           })}
         </div>
 
-        {/* Without these the grid is thirty anonymous squares and the only way to
-            find out which day is which is to hover every one of them. */}
-        <div className="mt-1.5 flex items-center justify-between gap-3 text-[11px] text-muted">
+        {/* The cells carry the day of the month; these carry the month itself. */}
+        <div className="mt-2 flex items-center justify-between gap-3 text-[11px] text-muted">
           <span className="tabular-nums">{formatDayMonth(firstDay.date)}</span>
 
           {devices.length > 1 && <span className="truncate">ghi từ {devices.join(', ')}</span>}
