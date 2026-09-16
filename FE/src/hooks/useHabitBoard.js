@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as api from '../lib/api'
 import * as queue from '../lib/queue'
-import { getDeviceId, getLastSeq, renameDevice, setLastSeq } from '../lib/device'
+import { getDeviceId, getLastSeq, renameDevice, setLastSeq as persistLastSeq } from '../lib/device'
 import { todayLocal } from '../lib/dates'
 
 const WINDOW_DAYS = 30
@@ -29,7 +29,8 @@ export function useHabitBoard() {
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState(null)
 
-  const lastSeq = useRef(getLastSeq())
+  const [lastSeqValue, setLastSeqValue] = useState(getLastSeq)
+  const lastSeq = useRef(lastSeqValue)
   const today = todayLocal()
 
   const refreshQueue = useCallback(async () => {
@@ -41,7 +42,8 @@ export function useHabitBoard() {
       const data = await api.getBoard(today, WINDOW_DAYS)
       setBoard(data)
       lastSeq.current = Math.max(lastSeq.current, data.maxSeq)
-      setLastSeq(lastSeq.current)
+      setLastSeqValue(lastSeq.current)
+      persistLastSeq(lastSeq.current)
       setError(null)
     } catch (e) {
       setError(e.message)
@@ -78,7 +80,8 @@ export function useHabitBoard() {
       })
 
       lastSeq.current = Math.max(lastSeq.current, result.maxSeq)
-      setLastSeq(lastSeq.current)
+      setLastSeqValue(lastSeq.current)
+      persistLastSeq(lastSeq.current)
 
       // The winning state for a cell comes back in the same response, so the
       // notice can name the device that overruled this one.
@@ -179,6 +182,8 @@ export function useHabitBoard() {
   const switchDevice = useCallback((name) => {
     renameDevice(name)
     lastSeq.current = 0
+    setLastSeqValue(0)
+    persistLastSeq(0)
     setOverrides([])
     setDeviceId(name)
   }, [])
@@ -237,7 +242,7 @@ export function useHabitBoard() {
     failedKeys,
     overrides,
     lastSyncedAt,
-    lastSeq: lastSeq.current,
+    lastSeq: lastSeqValue,
     toggle,
     addHabit,
     archive,

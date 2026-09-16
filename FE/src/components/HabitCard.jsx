@@ -11,7 +11,6 @@ export default function HabitCard({
   onToggle,
   onArchive,
 }) {
-  console.log('HABIT:', habit)
   const todayPending = pendingKeys.has(cellKey(habit.id, today));
   const todayFailed = failedKeys.has(cellKey(habit.id, today));
 
