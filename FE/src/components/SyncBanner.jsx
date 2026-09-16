@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { FAILED_AFTER_ATTEMPTS, STALE_AFTER_MS } from '../hooks/useHabitBoard'
 import { formatDayMonth, minutesSince } from '../lib/dates'
 import { IconClock, IconError } from './Icons'
@@ -11,6 +12,16 @@ import { IconClock, IconError } from './Icons'
  * change cannot go missing quietly the way a toast notification would allow.
  */
 export default function SyncBanner({ pending, offline, error }) {
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now())
+    }, 30_000)
+
+    return () => clearInterval(timer)
+  }, [])
+
   if (pending.length === 0) {
     return error && !offline ? (
       <div
@@ -22,10 +33,9 @@ export default function SyncBanner({ pending, offline, error }) {
       </div>
     ) : null
   }
-
   const oldest = pending[0]
   const waited = minutesSince(oldest.queuedAt)
-  const stale = Date.now() - oldest.queuedAt > STALE_AFTER_MS
+  const stale = now - oldest.queuedAt > STALE_AFTER_MS
   const failing = pending.filter((o) => (o.attempts ?? 0) >= FAILED_AFTER_ATTEMPTS)
 
   const tone = failing.length > 0 || stale ? 'failed' : 'pending'
