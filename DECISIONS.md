@@ -32,8 +32,8 @@ Chia theo chiều dữ liệu chảy: mô hình dữ liệu → luật tính str
 diện → tài liệu. Mỗi bước xong là chạy được và kiểm chứng được trước khi sang bước sau.
 
 **Đã làm**: hai bảng dữ liệu, tính streak khi đọc, một endpoint đồng bộ hai chiều, hàng đợi
-offline trong trình duyệt, giao diện hiển thị trạng thái chờ/đã gửi/lỗi/bị ghi đè, và bộ test cho
-hai chỗ khó nhất.
+offline trong trình duyệt, giao diện thể hiện trạng thái chờ / đã gửi / gửi lỗi / bị ghi đè / dữ
+liệu cũ, và bộ test cho hai chỗ khó nhất.
 
 **Không làm**: đăng nhập, tick nhiều lần mỗi ngày, tần suất tuỳ biến, service worker thật, triển
 khai lên máy chủ.
@@ -58,6 +58,7 @@ sai, chống trùng sai, và cách tính streak cũng sai theo. Xem mục 4.
 | Tính streak khi đọc | Lưu sẵn, hoặc lai có cache | Xem mục 5. |
 | Last-write-wins | Merge, hoặc hỏi người dùng | Xem mục 9. |
 | Không đăng nhập | JWT | Người chấm mở lên là dùng được ngay. Cột `UserId` vẫn có sẵn trong mọi bảng nên thêm đăng nhập sau không phải đổi schema. |
+| Icon nhúng thẳng SVG | Font icon, thư viện React | Font Material đầy đủ nặng khoảng 1.5MB để vẽ vài hình. Icon của giao diện được chép path vào code; 32 icon cho thói quen thì nạp dạng file SVG từ chính package của Google. |
 
 **Quyết định ít tự tin nhất: last-write-wins dựa trên giờ của client.**
 
@@ -86,6 +87,12 @@ UNIQUE (UserId, HabitId, LocalDate)
 ```
 
 **`SyncOperations`** — nhật ký mọi thao tác server đã nhận, khoá chính là `OpId` do client sinh.
+
+**`Habits`** giữ tên thói quen, biểu tượng và mốc lưu trữ. Ở đây có một chỗ đặt tên chưa chuẩn,
+nói thẳng ra thay vì để người đọc tự phát hiện: cột tên là `Emoji` nhưng giá trị bên trong là
+**tên icon Material Symbols** (`water_drop`, `directions_run`), không phải ký tự emoji. Ban đầu
+nó đúng là emoji thật; khi đổi sang bộ icon thì tên cột chưa được đổi theo. Sửa cho đúng cần một
+migration đổi tên cột thành `Icon` — việc nhỏ nhưng chạm vào schema, nên nằm trong mục 13.
 
 **Hai bảng vì chúng trả lời hai câu hỏi khác nhau.** `CheckIns` trả lời "hiện giờ ngày này thế
 nào". `SyncOperations` trả lời "thao tác này server xử lý chưa". Gộp lại thì mất một trong hai.
@@ -319,6 +326,7 @@ thì ngưỡng đó dài hơn nhiều.
   người ngồi một máy vẫn dựng lại được cảnh hai thiết bị mâu thuẫn.
 - **Mỗi thói quen chỉ tick một lần mỗi ngày.** Xem mục 4.
 - **Không có tần suất tuỳ biến.** Mọi thói quen đều là hằng ngày.
+- **Biểu tượng chọn từ danh sách 32 cái.** Không cho tải ảnh lên, cũng không cho gõ emoji tự do.
 - **Thông báo bị ghi đè chỉ sống trong phiên.** Đóng tab là mất, vì nó nằm trong state của React
   chứ không được lưu xuống. Đủ cho mục đích của nó là giải thích một thay đổi vừa xảy ra trước
   mắt, nhưng một sản phẩm thật nên giữ lại thành nhật ký xem được sau.
@@ -339,9 +347,10 @@ Theo thứ tự tôi sẽ làm:
    nhận `userId`.
 2. **Giới hạn tần suất và kích thước lô.** Đã chặn 500 thao tác mỗi lô, nhưng chưa có rate limit
    theo thiết bị.
-3. **Giao dịch cho toàn bộ một lô.** Hiện `SaveChangesAsync` gọi một lần ở cuối nên EF đã bọc
-   trong một transaction, nhưng `nextval` nằm ngoài. Cần khẳng định rõ ràng bằng transaction tường
-   minh và xử lý trường hợp unique index bắn lỗi do hai request đồng thời.
+3. **Giao dịch cho toàn bộ một lô.** `SyncService` gọi `SaveAsync` hai lần ở cuối, nhưng cả hai
+   dùng chung một `DbContext` nên lần thứ hai không sinh thêm câu lệnh nào và EF vẫn gói tất cả
+   trong một transaction. Riêng `nextval` thì nằm ngoài transaction đó. Cần khẳng định bằng một
+   transaction tường minh, và xử lý trường hợp unique index bắn lỗi do hai request đồng thời.
 4. **Đổi offline mô phỏng thành service worker thật**, để app mở được khi không có mạng.
 5. **Dọn `SyncOperations`.** Bảng này chỉ lớn lên. Cần xoá bản ghi cũ hơn một ngưỡng — chọn ngưỡng
    phải dài hơn khoảng thời gian một thiết bị có thể offline.
@@ -365,3 +374,4 @@ Theo thứ tự tôi sẽ làm:
   tính chuỗi dài nhất. Xem mục 5.
 - **Thông báo khi nhận thay đổi từ máy khác.** Hiện chỉ báo khi thay đổi của mình bị ghi đè. Trường
   hợp máy khác tick một ngày mà máy này chưa từng chạm tới thì ô cứ thế đổi màu, không nói gì.
+- **Đổi tên cột `Emoji` thành `Icon`.** Xem mục 4. Cần một migration nên chưa làm trong bài này.

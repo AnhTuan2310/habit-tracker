@@ -1,12 +1,18 @@
 /**
- * Material Symbols, rounded style, weight 400.
+ * Material Symbols, rounded style, weight 400 — the eight icons the interface
+ * itself uses.
  *
  * The paths are lifted verbatim from Google's `@material-symbols/svg-400`
- * package (Apache License 2.0) and inlined here. Pulling the real icon font
- * would mean shipping around 1.5MB to render seven glyphs, and a React wrapper
- * package would be another dependency for the same seven shapes.
+ * package (Apache License 2.0) and inlined here, so these cost nothing at
+ * runtime beyond the markup. Pulling the real icon font instead would mean
+ * shipping roughly 1.5MB to draw eight glyphs.
  *
- * To add one: find it in that package under `rounded/<name>.svg` (or
+ * Habit icons are handled differently, in `src/icons/habitIcons.js`: there are
+ * 32 of them and the user picks one, so they are imported as SVG files from that
+ * same package and loaded as assets. Hand-copying 32 more paths into this file
+ * would be worse in every way.
+ *
+ * To add one here: find it in that package under `rounded/<name>.svg` (or
  * `<name>-fill.svg` for the solid variant) and copy the `d` attribute.
  */
 
